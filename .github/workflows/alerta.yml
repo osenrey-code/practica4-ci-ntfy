@@ -1,0 +1,35 @@
+name: Alerta de integracion continua
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  ejecutar-y-notificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Ejecutar el programa Hola mundo
+        run: node hola-mundo.js
+
+      - name: Enviar notificacion a ntfy.sh
+        env:
+          NTFY_URL: https://ntfy.sh/devops-itla
+        run: |
+          curl --fail-with-body --retry 3 \
+            --header "Title: Integracion continua completada" \
+            --header "Tags: white_check_mark,rocket" \
+            --data-binary "Hola mundo ejecutado correctamente en ${GITHUB_REPOSITORY}, rama ${GITHUB_REF_NAME}. Commit: ${GITHUB_SHA}." \
+            "${NTFY_URL}"
